@@ -1,42 +1,26 @@
-import "./Game.css";
 import * as THREE from "three";
 import * as CANNON from "cannon-es";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
-import { act, useEffect, useRef, useState } from "react";
-import jumpSound from "../sounds/jump.mp3";
-import slideSound from "../sounds/slide.mp3";
-import pickupSound from "../sounds/pickup.mp3";
-import bgMusic from "../sounds/background.mp3";
+// import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
+import { useRef, useState } from "react";
 import gsap from "gsap";
-import { ParticleSystem } from "../utils/particleSystem.js";
 import StartModal from "./StartModal.jsx";
-import CannonDebugger from "cannon-es-debugger";
 import GameOverModal from "./GameOverModal.jsx";
 import GameUI from "./GameUI.jsx";
 
 const Game = () => {
   let actorMesh, boulder1, boulder2, plant, floor;
   let actorBody, boulder1Body, boulder2Body, obstacleBody;
-  let particleEffectJump, particleEffectSlide;
   const mountRef = useRef(null);
   let obstacles = [];
-  let cameraZoomed = false;
-
-  const [distance, setDistance] = useState(0);
   const [gameStart, isGameStart] = useState(false);
-  const [powerUpStatus, setPowerUpStatus] = useState("");
-  let lastCollisionTime = 0;
   const clock = new THREE.Clock();
-  const [actorLife, setActorLife] = useState(100);
-  const [mileCounter, setMileCounter] = useState(0);
   const [showModal, setShowModal] = useState(false);
 
   //ref
   // Use refs for Three.js objects that need to persist
   const actorMeshRef = useRef(null);
-  const actorBodyRef = useRef(null);
   const obstaclesRef = useRef([]);
   const sceneRef = useRef(null);
   const worldRef = useRef(null);
@@ -45,7 +29,6 @@ const Game = () => {
   let timeRef = useRef("");
   let actorLifeRef = useRef(0);
   const floorsRef = useRef([]);
-  const floorCounterRef = useRef(0);
   const maxCollisions = 20;
 
   let day = true;
@@ -55,12 +38,6 @@ const Game = () => {
   let floorCounter = 0;
   // let mileCounter = 0;
 
-  let previousZ = 0; // initial position
-
-  let shieldActive = false;
-  let boostActive = false;
-  let powerUpTimer = 0;
-  let shieldBar, boostBar;
   let targetFov = 75;
   let isJumping = false;
   // Initialize the scene
@@ -393,12 +370,12 @@ const Game = () => {
   const audioListener = new THREE.AudioListener();
   camera.add(audioListener);
   const ambientSound = new THREE.Audio(audioListener);
-  const jumpAudio = new Audio(jumpSound);
+  const jumpAudio = new Audio("/sounds/jump.mp3");
   // const slideAudio = new Audio(slideSound);
   //const pickupAudio = new Audio(pickupSound);
 
   const audioLoader = new THREE.AudioLoader();
-  audioLoader.load(bgMusic, (buffer) => {
+  audioLoader.load("/sounds/background.mp3", (buffer) => {
     ambientSound.setBuffer(buffer);
     ambientSound.setLoop(true);
     ambientSound.setVolume(0.5);

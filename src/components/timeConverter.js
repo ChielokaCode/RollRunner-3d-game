@@ -1,10 +1,3 @@
-/**
- * Converts a time string to seconds
- * Supported formats:
- * - "MM:SS" (e.g., "01:30" -> 90 seconds)
- * - "HH:MM:SS" (e.g., "01:30:45" -> 5445 seconds)
- * - Number as string (e.g., "90" -> 90 seconds)
- */
 export const convertTimeToSeconds = (timeString) => {
   // Handle empty input
   if (!timeString || timeString.trim() === "") {

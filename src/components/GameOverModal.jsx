@@ -1,36 +1,3 @@
-// import React from "react";
-
-// const GameOverModal = ({ distance, time, restartGame }) => {
-//   return (
-//     <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex justify-center items-center">
-//       <div className="bg-white p-8 rounded-lg shadow-lg w-96">
-//         <h2 className="text-3xl font-semibold text-center text-red-600">
-//           Game Over!
-//         </h2>
-//         <p className="mt-4 text-lg text-center">
-//           New Distance Score!! Keep it up
-//         </p>
-//         <p className="mt-4 text-lg text-center">
-//           Distance: <span>{Math.floor(distance)} meters</span>
-//         </p>
-//         <p className="mt-4 text-lg text-center">
-//           Time: <span>{time}</span>
-//         </p>
-//         <div className="mt-6 flex justify-center">
-//           <button
-//             onClick={restartGame}
-//             className="bg-green-500 text-white py-2 px-6 rounded-lg hover:bg-green-400"
-//           >
-//             Restart Game
-//           </button>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default GameOverModal;
-
 import React from "react";
 import { RotateCcw } from "lucide-react";
 import { convertTimeToSeconds } from "./timeConverter";
