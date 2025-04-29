@@ -3,7 +3,7 @@ import * as CANNON from "cannon-es";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 // import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import StartModal from "./StartModal.jsx";
 import GameOverModal from "./GameOverModal.jsx";
@@ -395,7 +395,51 @@ const Game = () => {
     }
   });
 
-  //key presses
+  //key presses for andriod users
+  useEffect(() => {
+    let startX = 0;
+    let startY = 0;
+
+    const handleTouchStart = (e) => {
+      const touch = e.touches[0];
+      startX = touch.clientX;
+      startY = touch.clientY;
+    };
+
+    const handleTouchEnd = (e) => {
+      const touch = e.changedTouches[0];
+      const diffX = touch.clientX - startX;
+      const diffY = touch.clientY - startY;
+
+      // Swipe detection
+      if (Math.abs(diffX) > Math.abs(diffY)) {
+        if (diffX > 30) {
+          // Swipe right → D key
+          window.dispatchEvent(new KeyboardEvent("keydown", { key: "d" }));
+        } else if (diffX < -30) {
+          // Swipe left → A key
+          window.dispatchEvent(new KeyboardEvent("keydown", { key: "a" }));
+        }
+      } else {
+        if (diffY < -30) {
+          // Swipe up → Space key
+          window.dispatchEvent(new KeyboardEvent("keydown", { key: " " }));
+        }
+      }
+    };
+
+    window.addEventListener("touchstart", handleTouchStart);
+    window.addEventListener("touchend", handleTouchEnd);
+
+    return () => {
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, []);
+
+  //End of swipe / touch press for andriod users
+
+  //key presses  for laptop users
   const handleKey = (e) => {
     if (!actorBody) return;
 
@@ -640,7 +684,7 @@ const Game = () => {
 
       /////////////////////////////////
       // // Update position with acceleration
-      const baseSpeed = 0.7;
+      const baseSpeed = 1;
       const distanceScale = currentDistanceRef.current / 50;
       const acceleration = Math.min(1 + Math.log(distanceScale + 1), 4);
       const currentSpeed = baseSpeed * acceleration;
@@ -779,7 +823,7 @@ const Game = () => {
     // Reset distance display
     const distanceDiv = document.getElementById("distance");
     if (distanceDiv) {
-      distanceDiv.innerText = "Distance: 0 meters";
+      distanceDiv.innerText = "0";
     }
 
     // Clean up all obstacles
