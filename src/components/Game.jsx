@@ -7,6 +7,11 @@ import { useRef, useState } from "react";
 import gsap from "gsap";
 import StartModal from "./StartModal.jsx";
 import GameOverModal from "./GameOverModal.jsx";
+// import GameUI from "./GameUI.jsx";
+import CollisionCounter from "./CollisionCounter.jsx";
+import HealthBar from "./HealthBar.jsx";
+import DistanceBar from "./DistanceBar.jsx";
+import GameTimer from "./GameTimer.jsx";
 import GameUI from "./GameUI.jsx";
 
 const Game = () => {
@@ -295,9 +300,9 @@ const Game = () => {
     // Spawn obstacles only if models are loaded
     if (type >= 5 && boulder1 && boulder2 && plant) {
       const obstacleOptions = [
-        { mesh: boulder1, size: new CANNON.Vec3(0.5, 1, 0.5) },
-        { mesh: boulder2, size: new CANNON.Vec3(0.5, 1, 0.5) },
-        { mesh: plant, size: new CANNON.Vec3(0.5, 1, 0.5) }, // Smaller collision for plant
+        { mesh: boulder1, size: new CANNON.Vec3(0, 0, 0) },
+        { mesh: boulder2, size: new CANNON.Vec3(0, 0, 0) },
+        { mesh: plant, size: new CANNON.Vec3(0, 0, 0) }, // Smaller collision for plant
       ];
 
       // Add 2-3 obstacles per floor
@@ -319,7 +324,8 @@ const Game = () => {
         usedPositions.add(`${x.toFixed(1)},${obstacleZ.toFixed(1)}`);
 
         const obstacle = originalObstacle.clone(true);
-        const scale = 0.9 + Math.random() * 0.5;
+        const scale = 1 + Math.random() * 0.5;
+        // const randomPosZ = 0.1 + Math.random() * 3;
 
         obstacle.scale.set(scale, scale, scale);
         obstacle.position.set(x, 0.2, obstacleZ);
@@ -331,8 +337,10 @@ const Game = () => {
         obstacleBody = new CANNON.Body({
           mass: 0,
           shape: obstacleShape,
-          position: new CANNON.Vec3(x, size.y + 0.2, obstacleZ),
+          position: new CANNON.Vec3(x, 0.2, obstacleZ),
+          material: defaultMaterial,
         });
+
         obstacleBody.castShadow = true;
         world.addBody(obstacleBody);
 
@@ -403,7 +411,7 @@ const Game = () => {
       gsap.to(actorBody.position, {
         x: actorBody.position.x + moveDistance, // 👈 Move left (minus x)
         duration: 0.2, // Faster glide
-        ease: "power2.out",
+        ease: "sine.inOut",
       });
     }
 
@@ -412,7 +420,7 @@ const Game = () => {
       gsap.to(actorBody.position, {
         x: actorBody.position.x - moveDistance, // 👈 Move right (plus x)
         duration: 0.2, // Faster glide
-        ease: "power2.out",
+        ease: "sine.inOut",
       });
     }
   };
@@ -503,9 +511,7 @@ const Game = () => {
 
     const collisions = document.getElementById("collisions");
     if (collisions) {
-      collisions.innerText = `Collisions: ${Math.floor(
-        noOfCollisionsRef.current
-      )}`;
+      collisions.innerText = `${Math.floor(noOfCollisionsRef.current)}`;
     }
 
     //Visual feedback
@@ -623,7 +629,7 @@ const Game = () => {
     // Update time display
     const timeElement = document.getElementById("time");
     if (timeElement) {
-      timeElement.innerText = `Time: ${timeRef.current}`;
+      timeElement.innerText = `${timeRef.current}`;
     }
 
     if (actorBody && actorMesh) {
@@ -642,7 +648,7 @@ const Game = () => {
       gsap.to(actorBody.position, {
         z: actorBody.position.z + currentSpeed,
         duration: 0.2,
-        ease: "bounce.out",
+        ease: "power1.out",
       });
 
       // Clean up and check collisions
@@ -664,7 +670,7 @@ const Game = () => {
       // You can maybe update a health bar
       const healthBar = document.getElementById("player-life");
       if (healthBar) {
-        healthBar.innerText = `Health: ${Math.floor(actorLifeRef.current)} %`;
+        healthBar.innerText = `${Math.floor(actorLifeRef.current)}%`;
       }
 
       // Check if actor is dead
@@ -683,9 +689,7 @@ const Game = () => {
         // Update distance display
         const distanceDiv = document.getElementById("distance");
         if (distanceDiv) {
-          distanceDiv.innerText = `Distance: ${Math.floor(
-            currentDistanceRef.current
-          )} meters`;
+          distanceDiv.innerText = `${Math.floor(currentDistanceRef.current)}m`;
         }
       }
 
@@ -703,7 +707,7 @@ const Game = () => {
 
       // Sync actorMesh with physics body
       if (actorMesh && actorBody) {
-        actorBody.angularVelocity.set(5, 0, 0);
+        actorBody.angularVelocity.set(3, 0, 0);
         actorMesh.position.copy(actorBody.position);
         actorMesh.quaternion.copy(actorBody.quaternion); // If you allow rotation
       }
@@ -791,37 +795,6 @@ const Game = () => {
   animate();
 
   return (
-    // <div className="relative w-full h-screen">
-    //   <div ref={mountRef} className="absolute inset-0" />
-    //   {/* Game UI */}
-    //   <div
-    //     id="hit-flash"
-    //     className="fixed top-0 left-0 w-full h-full bg-red-500 opacity-0 pointer-events-none transition-opacity duration-300 z-[1000]"
-    //   ></div>
-    //   <div id="game-ui" className="absolute top-0 left-0 z-20">
-    //     <div id="player-life">Health: {actorLife} %</div>
-    //     <div id="distance">Distance: {currentDistanceRef.current} meters</div>
-    //     <div id="collisions">Collisions: {noOfCollisionsRef.current}</div>
-    //     <div id="time">Time: {timeRef.current} seconds</div>
-    //   </div>
-    //   {/* Start Modal */}
-    //   <StartModal onStart={handleStart} />
-    //   {/* Game Over Modal */}
-    //   {showModal && (
-    //     <div className="fixed inset-0 z-[2000]">
-    //       <GameOverModal
-    //         distance={currentDistanceRef.current}
-    //         time={timeRef.current}
-    //         restartGame={restartGame}
-    //       />
-    //     </div>
-    //   )}
-    //   ;
-    //   <div
-    //     id="hit-flash"
-    //     className="absolute inset-0 bg-red-600 opacity-0 pointer-events-none"
-    //   ></div>
-    // </div>
     <div className="relative w-full h-screen overflow-hidden">
       <div ref={mountRef} className="absolute inset-0" />
 
@@ -834,7 +807,7 @@ const Game = () => {
         actorLife={actorLifeRef.current}
         distance={currentDistanceRef.current}
         time={timeRef.current}
-        collisions={noOfCollisionsRef.current}
+        // collisions={noOfCollisionsRef.current}
       />
 
       {!gameStart && !showModal && (

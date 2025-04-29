@@ -6,10 +6,10 @@ import WalletWrapper from "./WalletWrapper";
 import "@coinbase/onchainkit/styles.css";
 
 function StartModal({ onStart }) {
-  const { isConnected } = useAccount();
+  const account = useAccount();
 
   const handleStartClick = () => {
-    if (isConnected) {
+    if (account.status) {
       onStart();
     } else {
       alert("Please connect your wallet to start the game.");
@@ -23,7 +23,7 @@ function StartModal({ onStart }) {
         {/* <ConnectButton /> */}
         <WalletWrapper text="Connect Wallet" />
       </div>
-      <div className="bg-black/80 backdrop-blur-lg p-8 rounded-xl border border-white/20 max-w-md w-96 h-1/3 shadow-2xl text-center transform transition-all hover:scale-105">
+      <div className="bg-black/80 backdrop-blur-lg p-8 rounded-xl border border-white/20 max-w-md w-full h-fit shadow-2xl text-center transform transition-all hover:scale-105">
         <h1 className="text-3xl font-bold text-white mb-6">
           Welcome, BASE RUNNER
         </h1>
@@ -61,6 +61,24 @@ function StartModal({ onStart }) {
               D
             </div>
             <span>Right</span>
+          </div>
+          <div className="flex flex-col items-center">
+            <div className="bg-gray-700 w-10 h-10 rounded-lg flex items-center justify-center mb-1">
+              M
+            </div>
+            <span>Music</span>
+          </div>
+          <div className="flex flex-col items-center">
+            <div className="bg-gray-700 w-10 h-10 rounded-lg flex items-center justify-center mb-1">
+              Z
+            </div>
+            <span>Zoom In</span>
+          </div>
+          <div className="flex flex-col items-center">
+            <div className="bg-gray-700 w-10 h-10 rounded-lg flex items-center justify-center mb-1">
+              X
+            </div>
+            <span>Zoom out</span>
           </div>
         </div>
       </div>

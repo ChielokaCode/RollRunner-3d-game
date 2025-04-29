@@ -10,7 +10,10 @@ function CollisionCounter({ collisions }) {
           <div className="text-sm text-red-400 font-bold uppercase tracking-widest">
             Collisions
           </div>
-          <div className="text-3xl font-mono text-white font-bold tracking-wider">
+          <div
+            id="collisions"
+            className="text-3xl font-mono text-white font-bold tracking-wider"
+          >
             {collisions}
           </div>
         </div>

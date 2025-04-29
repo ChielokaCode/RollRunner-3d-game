@@ -7,7 +7,10 @@ function GameTimer({ time }) {
         <div className="text-sm text-cyan-400 font-bold mb-1 uppercase tracking-widest">
           Time
         </div>
-        <div className="text-5xl font-mono text-white font-bold tracking-wider">
+        <div
+          id="time"
+          className="text-5xl font-mono text-white font-bold tracking-wider"
+        >
           {time}
         </div>
       </div>
