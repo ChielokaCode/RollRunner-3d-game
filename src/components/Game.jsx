@@ -395,50 +395,6 @@ const Game = () => {
     }
   });
 
-  //key presses for andriod users
-  useEffect(() => {
-    let startX = 0;
-    let startY = 0;
-
-    const handleTouchStart = (e) => {
-      const touch = e.touches[0];
-      startX = touch.clientX;
-      startY = touch.clientY;
-    };
-
-    const handleTouchEnd = (e) => {
-      const touch = e.changedTouches[0];
-      const diffX = touch.clientX - startX;
-      const diffY = touch.clientY - startY;
-
-      // Swipe detection
-      if (Math.abs(diffX) > Math.abs(diffY)) {
-        if (diffX > 30) {
-          // Swipe right → D key
-          window.dispatchEvent(new KeyboardEvent("keydown", { key: "d" }));
-        } else if (diffX < -30) {
-          // Swipe left → A key
-          window.dispatchEvent(new KeyboardEvent("keydown", { key: "a" }));
-        }
-      } else {
-        if (diffY < -30) {
-          // Swipe up → Space key
-          window.dispatchEvent(new KeyboardEvent("keydown", { key: " " }));
-        }
-      }
-    };
-
-    window.addEventListener("touchstart", handleTouchStart);
-    window.addEventListener("touchend", handleTouchEnd);
-
-    return () => {
-      window.removeEventListener("touchstart", handleTouchStart);
-      window.removeEventListener("touchend", handleTouchEnd);
-    };
-  }, []);
-
-  //End of swipe / touch press for andriod users
-
   //key presses  for laptop users
   const handleKey = (e) => {
     if (!actorBody) return;
@@ -838,6 +794,57 @@ const Game = () => {
 
   animate();
 
+  const simulateKey = (key) => {
+    console.log(key);
+    window.dispatchEvent(new KeyboardEvent("keydown", { key }));
+
+    if (!actorBody) return;
+
+    let moveDistance = 2; // 👈 How far you want actor glide left or right
+
+    if (key === "Space") {
+      gsap.to(actorBody.position, {
+        y: actorBody.position.y + 5, // 👈 Move left (minus x)
+        duration: 0.2, // Faster glide
+        ease: "sine.inOut",
+      });
+      isJumping = true;
+    }
+
+    // Move Left (A)
+    if (key === "a" || key === "A") {
+      gsap.to(actorBody.position, {
+        x: actorBody.position.x + moveDistance, // 👈 Move left (minus x)
+        duration: 0.2, // Faster glide
+        ease: "sine.inOut",
+      });
+    }
+
+    // Move Right (D)
+    if (key === "d" || key === "D") {
+      gsap.to(actorBody.position, {
+        x: actorBody.position.x - moveDistance, // 👈 Move right (plus x)
+        duration: 0.2, // Faster glide
+        ease: "sine.inOut",
+      });
+    }
+    // Move Right (D)
+    if (key === "m" || key === "M") {
+      // Resume audio context if suspended
+      if (audioListener.context.state === "suspended") {
+        audioListener.context.resume();
+      }
+
+      // Toggle play/stop audio
+      if (ambientSound.isPlaying) {
+        ambientSound.stop();
+      } else {
+        ambientSound.play();
+      }
+    }
+  };
+
+  document.addEventListener("keydown", simulateKey);
   return (
     <div className="relative w-full h-screen overflow-hidden">
       <div ref={mountRef} className="absolute inset-0" />
@@ -870,6 +877,41 @@ const Game = () => {
           />
         </div>
       )}
+
+      {/* touch presses zone for andriod users */}
+      {/* Tap Controls - visible only on small screens */}
+      <div className="fixed inset-0 z-50 pointer-events-auto block md:hidden">
+        {/* Left Tap Zone */}
+        <div
+          onClick={() => simulateKey("a")}
+          className="absolute left-0 top-0 w-1/5 h-full bg-black bg-opacity-20 flex items-center justify-center text-white text-xl"
+        >
+          👈 Left
+        </div>
+
+        {/* Right Tap Zone */}
+        <div
+          onClick={() => simulateKey("d")}
+          className="absolute right-0 top-0 w-1/5 h-full bg-black bg-opacity-20 flex items-center justify-center text-white text-xl"
+        >
+          Right 👉
+        </div>
+
+        {/* Jump Tap Zone */}
+        <div
+          onClick={() => simulateKey("Space")}
+          className="absolute bottom-0 left-1/3 w-1/3 h-1/6 bg-black bg-opacity-20 flex items-center justify-center text-white text-xl"
+        >
+          ⬆️ Jump
+        </div>
+
+        <div
+          onClick={() => simulateKey("m")}
+          className="absolute top-0 left-1/3 w-1/3 h-1/6 bg-black bg-opacity-20 flex items-center justify-center text-white text-xl"
+        >
+          ⬆️ Music
+        </div>
+      </div>
     </div>
   );
 };
