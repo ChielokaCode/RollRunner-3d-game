@@ -1,7 +1,6 @@
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import HomePage from "./pages/HomePage";
-
 import { Toaster } from "react-hot-toast";
 // import "@rainbow-me/rainbowkit/styles.css";
 
@@ -9,8 +8,9 @@ import { OnchainKitProvider } from "@coinbase/onchainkit";
 import { RainbowKitProvider } from "@rainbow-me/rainbowkit";
 import { WagmiProvider } from "wagmi";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
-import { base } from "wagmi/chains";
+import { base, baseSepolia } from "wagmi/chains";
 import { config } from "./wagmi";
+import MarketPlacePage from "./pages/MarketPlacePage";
 
 const queryClient = new QueryClient();
 
@@ -29,12 +29,17 @@ function App() {
           //   },
           // }}
           apiKey={apiKey}
-          chain={base}
+          chain={baseSepolia}
         >
           <RainbowKitProvider>
             <Router>
               <Routes>
                 <Route exact path="/" element={<HomePage />} />
+                <Route
+                  exact
+                  path="/marketplace"
+                  element={<MarketPlacePage />}
+                />
               </Routes>
               <Toaster />
             </Router>

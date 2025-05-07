@@ -1,18 +1,16 @@
 import * as THREE from "three";
+
 import * as CANNON from "cannon-es";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 // import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import gsap from "gsap";
 import StartModal from "./StartModal.jsx";
 import GameOverModal from "./GameOverModal.jsx";
-// import GameUI from "./GameUI.jsx";
-import CollisionCounter from "./CollisionCounter.jsx";
-import HealthBar from "./HealthBar.jsx";
-import DistanceBar from "./DistanceBar.jsx";
-import GameTimer from "./GameTimer.jsx";
 import GameUI from "./GameUI.jsx";
+import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
+import TWEEN, { Tween } from "@tweenjs/tween.js";
 
 const Game = () => {
   let actorMesh, boulder1, boulder2, plant, floor;
@@ -23,7 +21,46 @@ const Game = () => {
   const clock = new THREE.Clock();
   const [showModal, setShowModal] = useState(false);
 
-  //ref
+  //TODO : obstacles constants
+
+  let currentObstacleOne = null;
+  let currentObstacleTwo = null;
+
+  const playerBox = new THREE.Mesh(
+    new THREE.BoxGeometry(),
+    new THREE.MeshPhongMaterial({ color: 0x0000ff })
+  );
+
+  const playerBoxCollider = new THREE.Box3(
+    new THREE.Vector3(),
+    new THREE.Vector3()
+  );
+
+  const obstacleBox = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
+
+  const obstacleBox2 = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
+
+  const coinObject = new THREE.Object3D();
+
+  const coinsArray = [];
+
+  let activeCoinsGroup = new THREE.Group();
+
+  const coinBox = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
+
+  let coins = 0;
+
+  const obstacleArray = [];
+  const obstaclePhysicsBodies = [];
+  let activeObstacles = [];
+  let obstaclesLoaded = 0;
+  const totalObstacleTypes = 3; // e.g., you're loading 3 obstacles
+  let canSpawnObstacles = false;
+
+  const speed = 220;
+  const delta = 0;
+
+  //TODO :ref
   // Use refs for Three.js objects that need to persist
   const actorMeshRef = useRef(null);
   const obstaclesRef = useRef([]);
@@ -45,27 +82,28 @@ const Game = () => {
 
   let targetFov = 75;
   let isJumping = false;
-  // Initialize the scene
+  //TODO:  Initialize the scene
   const scene = new THREE.Scene();
 
-  // Physics world setup
+  //TODO Physics world setup
   const world = new CANNON.World();
   world.gravity.set(0, -9.82, 0);
 
   scene.background = new THREE.Color(0x87ceeb);
+  scene.fog = new THREE.FogExp2(0xf0fff0, 0.03);
   const loader = new GLTFLoader();
   //Canvas
   const canvas = document.querySelector("canvas.webgl");
 
-  // Initialize the camera
+  //TODO Initialize the camera
   const camera = new THREE.PerspectiveCamera(
-    90,
+    30, //90
     window.innerWidth / window.innerHeight,
     0.1,
     1000
   );
 
-  //jump camera
+  //TODO jump camera
   const jumpCamera = new THREE.PerspectiveCamera(
     75,
     window.innerWidth / window.innerHeight,
@@ -73,7 +111,7 @@ const Game = () => {
     1000
   );
 
-  //Lights
+  //TODO : Lights
   const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
   scene.add(ambientLight);
   const dirLight = new THREE.DirectionalLight(0xffffff, 1);
@@ -94,18 +132,18 @@ const Game = () => {
   fillLight.position.set(-5, 5, -5);
   scene.add(fillLight); // Add to scene
 
-  //Default Material
-  const defaultMaterial = new CANNON.Material("default");
-  const defaultContactMaterial = new CANNON.ContactMaterial(
-    defaultMaterial,
-    defaultMaterial,
-    {
-      friction: 0.1,
-      restitution: 0.7,
-    }
-  );
-  world.addContactMaterial(defaultContactMaterial);
-  //HDR
+  //TODO : Default Material
+  // const defaultMaterial = new CANNON.Material("default");
+  // const defaultContactMaterial = new CANNON.ContactMaterial(
+  //   defaultMaterial,
+  //   defaultMaterial,
+  //   {
+  //     friction: 0.1,
+  //     restitution: 0.7,
+  //   }
+  // );
+  // world.addContactMaterial(defaultContactMaterial);
+  //TODO : HDR
   // const rgbeLoader = new RGBELoader();
   // rgbeLoader.load("/textures/environmentMap/meadow_2_4k.hdr", (texture) => {
   //   texture.mapping = THREE.EquirectangularReflectionMapping; // Very important!
@@ -114,23 +152,19 @@ const Game = () => {
   //   scene.background = texture; // 👈 Optional: If you want the skybox to show the forest
   // });
 
-  //Obstacles loader
+  //TODO : Obstacles loader
   loader.load("/textures/boulder1/namaqualand_boulder_02_2k.gltf", (gltf) => {
     boulder1 = gltf.scene;
 
-    boulder1.position.y = 2;
+    boulder1.position.y = 0.1;
 
     // Create physics body for boulder1
     const shape = new CANNON.Box(new CANNON.Vec3(0.8, 0.8, 0.8)); // simple box around it
     boulder1Body = new CANNON.Body({
-      material: defaultMaterial,
+      //material: defaultMaterial,
       mass: 0, // static object
       shape: shape,
-      position: new CANNON.Vec3(
-        boulder1.position.x,
-        boulder1.position.y,
-        boulder1.position.z
-      ),
+      position: new CANNON.Vec3(0, 0.1, 0),
     });
     boulder1Body.castShadow = true;
     world.addBody(boulder1Body);
@@ -138,19 +172,15 @@ const Game = () => {
 
   loader.load("/textures/boulder2/namaqualand_boulder_03_2k.gltf", (gltf) => {
     boulder2 = gltf.scene;
-    boulder2.position.y = 3;
+    boulder2.position.y = 0.1;
 
     // // Create physics body for boulder2
     const shape = new CANNON.Box(new CANNON.Vec3(0.8, 0.8, 0.8));
     boulder2Body = new CANNON.Body({
-      material: defaultMaterial,
+      //material: defaultMaterial,
       mass: 0,
       shape: shape,
-      position: new CANNON.Vec3(
-        boulder2.position.x,
-        boulder2.position.y,
-        boulder2.position.z
-      ),
+      position: new CANNON.Vec3(0, 0.1, 0),
     });
     boulder2Body.castShadow = true;
     world.addBody(boulder2Body);
@@ -160,34 +190,59 @@ const Game = () => {
     plant = gltf.scene;
   });
 
-  //Actor Mesh
+  //TODO :Actor Mesh
   // Load actor model
-  loader.load("/textures/football/dirty_football_2k.gltf", (gltf) => {
-    actorMesh = gltf.scene;
-    actorMesh.scale.set(4, 4, 4);
-    actorMesh.position.y = 0.1;
+  // loader.load("/textures/football/dirty_football_2k.gltf", (gltf) => {
+  //   actorMesh = gltf.scene;
+  //   actorMesh.scale.set(4, 4, 4);
+  //   scene.add(actorMesh);
 
-    actorMesh.envMapIntensity = 1.5;
-    actorMesh.castShadow = true;
-    scene.add(actorMesh);
+  //   const actorShape = new CANNON.Sphere(0.5);
+  //   actorBody = new CANNON.Body({
+  //     mass: 1,
+  //     shape: actorShape,
+  //     position: new CANNON.Vec3(0, 0.1, 0), // Changed to y=0.1
+  //     linearDamping: 0.99,
+  //     angularDamping: 0.99,
+  //     fixedRotation: true,
+  //   });
 
-    // Use SPHERE shape for ball
-    const actorShape = new CANNON.Sphere(0.5); // 1 = radius
-    actorBody = new CANNON.Body({
-      mass: 1, // ball can move
-      material: defaultMaterial,
-      shape: actorShape,
-      position: new CANNON.Vec3(0, 5, 0), // start a little higher
-    });
+  //   actorBody.velocity.set(0, 0, 0);
+  //   actorBody.angularVelocity.set(0, 0, 0);
+  //   world.addBody(actorBody);
+  //   actorMesh.position.copy(actorBody.position);
+  // });
 
-    actorBody.castShadow = true;
-    actorBody.receiveShadow = false;
-    actorBody.linearDamping = 0.05; // less slow down when moving
-    actorBody.angularDamping = 0.05; // less slow down when rotating
-    world.addBody(actorBody);
+  // Replace the GLTF loader with a simple cube creation
+  const cubeGeometry = new THREE.BoxGeometry(0.6, 0.6, 0.6); // 1x1x1 cube
+  const cubeMaterial = new THREE.MeshStandardMaterial({
+    color: 0x00aaff, // Blue color
+    metalness: 0.3,
+    roughness: 0.7,
   });
 
-  //Update day and night
+  actorMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
+  actorMesh.position.y = 0.2;
+  actorMesh.scale.set(1, 1, 1); // No need to scale up like the football
+  scene.add(actorMesh);
+
+  // Change physics body to match cube shape
+  const actorShape = new CANNON.Box(new CANNON.Vec3(0.3, 0.3, 0.3)); // Half-size of 1x1x1 cube
+  actorBody = new CANNON.Body({
+    mass: 1,
+    shape: actorShape,
+    position: new CANNON.Vec3(0, 0.1, 0),
+    linearDamping: 0.99,
+    angularDamping: 0.99,
+    fixedRotation: false, // Changed to false to allow cube to rotate naturally
+  });
+
+  actorBody.velocity.set(0, 0, 0);
+  actorBody.angularVelocity.set(0, 0, 0);
+  world.addBody(actorBody);
+  actorMesh.position.copy(actorBody.position);
+
+  //TODO :Update day and night
   const updateDayNightCycle = () => {
     if (currentDistanceRef.current - lastDayNightChange >= 1000) {
       lastDayNightChange = currentDistanceRef.current;
@@ -230,7 +285,7 @@ const Game = () => {
     }
   };
 
-  //texture Loader
+  //TODO :texture Loader
   const textureLoader = new THREE.TextureLoader();
 
   const floorTextures = [textureLoader.load("/textures/grass/color.jpg")];
@@ -250,14 +305,14 @@ const Game = () => {
     }
   );
 
-  // Set repeat settings for all textures
+  //Set repeat settings for all textures
   floorTextures.forEach((tex) => {
     tex.wrapS = THREE.RepeatWrapping;
     tex.wrapT = THREE.RepeatWrapping;
     tex.repeat.set(2, 2);
   });
 
-  //Floors
+  //TODO : Floors
   const generateFloor = (z, type) => {
     const texture = floorTextures[type % floorTextures.length];
     const geometry = new THREE.BoxGeometry(20, 0.1, 20, 50, 50, 50); // Add more subdivisions
@@ -283,10 +338,10 @@ const Game = () => {
 
     floorsRef.current.push(floor);
 
-    //Floor Physics Body
+    //TODO :Floor Physics Body
     const floorShape = new CANNON.Plane();
     const floorBody = new CANNON.Body();
-    floorBody.material = defaultMaterial;
+    //floorBody.material = defaultMaterial;
     floorBody.mass = 0; //static at origin
     floorBody.addShape(floorShape);
     floorBody.position.set(0, 1, 0);
@@ -296,13 +351,13 @@ const Game = () => {
     );
     world.addBody(floorBody);
 
-    //new obstacle spawn
+    // //new obstacle spawn
     // Spawn obstacles only if models are loaded
     if (type >= 5 && boulder1 && boulder2 && plant) {
       const obstacleOptions = [
-        { mesh: boulder1, size: new CANNON.Vec3(0, 0, 0) },
-        { mesh: boulder2, size: new CANNON.Vec3(0, 0, 0) },
-        { mesh: plant, size: new CANNON.Vec3(0, 0, 0) }, // Smaller collision for plant
+        // { mesh: boulder1, size: new CANNON.Vec3(0, 0, 0) },
+        // { mesh: boulder2, size: new CANNON.Vec3(0, 0, 0) },
+        { mesh: plant, size: new CANNON.Vec3(1, 1, 1) }, // Smaller collision for plant
       ];
 
       // Add 2-3 obstacles per floor
@@ -324,11 +379,12 @@ const Game = () => {
         usedPositions.add(`${x.toFixed(1)},${obstacleZ.toFixed(1)}`);
 
         const obstacle = originalObstacle.clone(true);
-        const scale = 1 + Math.random() * 0.5;
-        // const randomPosZ = 0.1 + Math.random() * 3;
+        const scale = 1.5 + Math.random() * 0.5;
+        //const randomPosZ = 0.1 + Math.random() * 3;
 
         obstacle.scale.set(scale, scale, scale);
         obstacle.position.set(x, 0.2, obstacleZ);
+        obstacle.visible = true;
         obstacle.castShadow = true;
         scene.add(obstacle);
 
@@ -337,8 +393,7 @@ const Game = () => {
         obstacleBody = new CANNON.Body({
           mass: 0,
           shape: obstacleShape,
-          position: new CANNON.Vec3(x, 0.2, obstacleZ),
-          material: defaultMaterial,
+          position: new CANNON.Vec3(x, 0.1, obstacleZ),
         });
 
         obstacleBody.castShadow = true;
@@ -362,14 +417,12 @@ const Game = () => {
   //clean up floors
   const cleanUpFloors = () => {
     for (let i = floors.length - 1; i >= 0; i--) {
-      // Loop from end to start
       const floor = floors[i];
       if (floor.position.z < actorMesh.position.z - 50) {
-        // 👈 if floor is far behind
-        scene.remove(floor); // remove from scene
-        floor.geometry.dispose(); // free memory
-        floor.material.dispose(); // free material
-        floors.splice(i, 1); // remove from array
+        scene.remove(floor);
+        floor.geometry.dispose();
+        floor.material.dispose();
+        floors.splice(i, 1);
       }
     }
   };
@@ -399,15 +452,15 @@ const Game = () => {
   const handleKey = (e) => {
     if (!actorBody) return;
 
-    let moveDistance = 2; // 👈 How far you want actor glide left or right
+    let moveDistance = 2; // 👈 How far you want actor glide left or right 6.67
 
-    if (e.code === "Space") {
+    if (e.code === "Space" || e.keyCode === 38) {
       jump();
       isJumping = true;
     }
 
     // Move Left (A)
-    if (e.key === "a" || e.key === "A") {
+    if (e.key === "a" || e.key === "A" || e.keyCode === 37) {
       gsap.to(actorBody.position, {
         x: actorBody.position.x + moveDistance, // 👈 Move left (minus x)
         duration: 0.2, // Faster glide
@@ -416,7 +469,7 @@ const Game = () => {
     }
 
     // Move Right (D)
-    if (e.key === "d" || e.key === "D") {
+    if (e.key === "d" || e.key === "D" || e.keyCode === 39) {
       gsap.to(actorBody.position, {
         x: actorBody.position.x - moveDistance, // 👈 Move right (plus x)
         duration: 0.2, // Faster glide
@@ -476,6 +529,13 @@ const Game = () => {
   const handleStart = () => {
     console.log("Game Started!");
     isGameStart(true);
+
+    // Reset physics when game starts
+    if (actorBody) {
+      actorBody.position.set(0, 0.1, 0);
+      actorBody.velocity.set(0, 0, 0);
+      actorBody.angularVelocity.set(0, 0, 0);
+    }
   };
 
   const handleStop = () => {
@@ -485,8 +545,10 @@ const Game = () => {
 
   //check collision detection
   // More precise collision detection
-  const checkCollision = (obstacle) => {
+  const checkCollisions = (obstacle) => {
     if (!obstacle?.mesh || !actorMesh) return;
+
+    checkGroundContact();
 
     // Only check obstacles within a reasonable distance
     const distance = Math.abs(obstacle.mesh.position.z - actorMesh.position.z);
@@ -497,8 +559,8 @@ const Game = () => {
     const obstacleBox = new THREE.Box3().setFromObject(obstacle.mesh);
 
     // Adjust bounding box sizes for more precise collision
-    actorBox.min.y += 0.2; // Adjust collision box height
-    actorBox.max.y -= 0.2;
+    actorBox.min.y += 0.1; // Adjust collision box height
+    actorBox.max.y -= 0.1;
 
     // Check for intersection
     if (actorBox.intersectsBox(obstacleBox)) {
@@ -506,21 +568,109 @@ const Game = () => {
     }
   };
 
+  // const checkCollisions = (obstacle) => {
+  //   if (!actorBody || !actorMesh) return;
+
+  //   // Check floor contact first
+  //   checkGroundContact();
+
+  //   // Check obstacle collisions
+  //   // obstaclesRef.current.forEach((obstacle) => {
+  //   if (!obstacle?.mesh || !obstacle?.body) return;
+
+  //   // Calculate distance between actor and obstacle
+  //   const distance = actorBody.position.distanceTo(obstacle.body.position);
+
+  //   // Skip if too far away
+  //   if (distance > 0.05) return;
+
+  //   // More precise collision check using Cannon-es
+  //   if (world.overlapCheck(actorBody, obstacle.body)) {
+  //     if (!obstacle.collided) {
+  //       // Only trigger once per obstacle
+  //       obstacle.collided = true;
+  //       handleCollision();
+  //     }
+  //   } else {
+  //     obstacle.collided = false; // Reset for next pass
+  //   }
+  //   //});
+  // };
+
+  const checkGroundContact = () => {
+    if (!actorBody) return;
+
+    // Raycast downward to check ground contact
+    const rayStart = new CANNON.Vec3(
+      actorBody.position.x,
+      actorBody.position.y,
+      actorBody.position.z
+    );
+    const rayEnd = new CANNON.Vec3(
+      actorBody.position.x,
+      actorBody.position.y - 0.2, // Slightly more than radius
+      actorBody.position.z
+    );
+
+    const raycastResult = new CANNON.RaycastResult();
+    const ray = new CANNON.Ray(rayStart, rayEnd);
+
+    // Perform the raycast
+    world.raycastClosest(ray, {}, raycastResult);
+
+    // Check if we hit something close enough
+    const isOnGround =
+      raycastResult.hasHit &&
+      actorBody.position.y - raycastResult.hitPointWorld.y < 0.2;
+
+    // You can use this for jump logic
+    if (isOnGround) {
+      isJumping = false;
+      // Reset any jump-related states here
+    }
+  };
+
+  // const handleCollision = () => {
+  //   noOfCollisionsRef.current += 1;
+
+  //   const collisions = document.getElementById("collisions");
+  //   if (collisions) {
+  //     collisions.innerText = `${Math.floor(noOfCollisionsRef.current)}`;
+  //   }
+
+  //   //Visual feedback
+  //   const hitFlash = document.getElementById("hit-flash");
+  //   if (hitFlash) {
+  //     hitFlash.style.opacity = "0.5";
+  //     setTimeout(() => {
+  //       hitFlash.style.opacity = "0";
+  //     }, 200);
+  //   }
+  // };
+
   const handleCollision = () => {
     noOfCollisionsRef.current += 1;
+    console.log("Collision! Total:", noOfCollisionsRef.current);
 
-    const collisions = document.getElementById("collisions");
-    if (collisions) {
-      collisions.innerText = `${Math.floor(noOfCollisionsRef.current)}`;
+    // Update UI immediately
+    const collisionsElement = document.getElementById("collisions");
+    if (collisionsElement) {
+      collisionsElement.innerText = `${noOfCollisionsRef.current}`;
     }
 
-    //Visual feedback
+    // Flash effect
     const hitFlash = document.getElementById("hit-flash");
     if (hitFlash) {
-      hitFlash.style.opacity = "0.5";
-      setTimeout(() => {
-        hitFlash.style.opacity = "0";
-      }, 200);
+      hitFlash.style.display = "block";
+      hitFlash.style.opacity = "0.7";
+
+      gsap.to(hitFlash, {
+        opacity: 0,
+        duration: 0.3,
+        onComplete: () => {
+          hitFlash.style.display = "none";
+        },
+      });
     }
   };
 
@@ -590,13 +740,17 @@ const Game = () => {
 
   //jump
   const jump = () => {
-    // Only allow jump if actor is standing on something (y-velocity is almost 0)
-    if (Math.abs(actorBody.velocity.y) < 0.1) {
-      actorBody.velocity.y = 10; // You can tweak this 8 to make the jump higher or smaller
-    }
+    // Only allow jump if game has started and actor is on ground
+    if (!gameStart || isJumping) return;
 
-    // Play the jump sound
-    jumpAudio.volume = 0.5; // Half the original volume
+    // Verify we're on ground using raycasting
+    // const ray = new CANNON.Ray(actorBody.position, new CANNON.Vec3(0, -1, 0));
+    // const rayResult = new CANNON.RaycastResult();
+    // world.raycastClosest(ray, {}, rayResult);
+
+    // if (rayResult.hasHit && rayResult.distance < 0.6) {
+    actorBody.velocity.y = 10;
+    isJumping = true;
     jumpAudio.play();
   };
 
@@ -607,8 +761,6 @@ const Game = () => {
     controls.update();
 
     animationId = window.requestAnimationFrame(animate);
-
-    //
 
     const elapsedTime = clock.getElapsedTime();
     const deltaTime = elapsedTime - oldElapsedTime;
@@ -640,7 +792,7 @@ const Game = () => {
 
       /////////////////////////////////
       // // Update position with acceleration
-      const baseSpeed = 1;
+      const baseSpeed = 0.5;
       const distanceScale = currentDistanceRef.current / 50;
       const acceleration = Math.min(1 + Math.log(distanceScale + 1), 4);
       const currentSpeed = baseSpeed * acceleration;
@@ -656,8 +808,10 @@ const Game = () => {
 
       // Only check nearby obstacles
       obstaclesRef.current.forEach((obstacle) => {
-        checkCollision(obstacle);
+        checkCollisions(obstacle);
       });
+
+      //checkCollisions();
 
       //update Actor life
       const currentCollisions = noOfCollisionsRef.current;
@@ -707,7 +861,7 @@ const Game = () => {
 
       // Sync actorMesh with physics body
       if (actorMesh && actorBody) {
-        actorBody.angularVelocity.set(3, 0, 0);
+        //actorBody.angularVelocity.set(1, 0, 0);
         actorMesh.position.copy(actorBody.position);
         actorMesh.quaternion.copy(actorBody.quaternion); // If you allow rotation
       }
@@ -715,8 +869,8 @@ const Game = () => {
       // Update camera position with smooth follow
       const idealCameraPos = new THREE.Vector3(
         actorMesh.position.x,
-        actorMesh.position.y + 5,
-        actorMesh.position.z - 10
+        actorMesh.position.y + 2.9,
+        actorMesh.position.z - 7
       );
 
       camera.position.lerp(idealCameraPos, 1);
@@ -803,12 +957,7 @@ const Game = () => {
     let moveDistance = 2; // 👈 How far you want actor glide left or right
 
     if (key === "Space") {
-      gsap.to(actorBody.position, {
-        y: actorBody.position.y + 5, // 👈 Move left (minus x)
-        duration: 0.2, // Faster glide
-        ease: "sine.inOut",
-      });
-      isJumping = true;
+      jump();
     }
 
     // Move Left (A)
@@ -847,12 +996,17 @@ const Game = () => {
   document.addEventListener("keydown", simulateKey);
   return (
     <div className="relative w-full h-screen overflow-hidden">
-      <div ref={mountRef} className="absolute inset-0" />
+      <div id="app" ref={mountRef} className="absolute inset-0" />
 
-      <div
+      {/* <div
         id="hit-flash"
         className="fixed top-0 left-0 w-full h-full bg-red-500 opacity-0 pointer-events-none transition-opacity duration-300 z-[1000]"
-      ></div>
+      ></div> */}
+      <div
+        id="hit-flash"
+        className="fixed top-0 left-0 w-full h-full bg-red-500 pointer-events-none"
+        style={{ display: "none", zIndex: 1000 }}
+      />
 
       <GameUI
         actorLife={actorLifeRef.current}
