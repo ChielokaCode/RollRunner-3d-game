@@ -98,20 +98,26 @@ function GameOverModal({ distance, time, collisions, restartGame }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-blue-900 via-black to-gray-900 space-y-4">
-      <div className="absolute top-4 left-4 flex items-center space-x-12">
+      <div className="absolute top-8 left-10 flex items-center space-x-12">
         {/* Top left corner of screen */}
         {/* <ConnectButton /> */}
         <WalletWrapper text="Connect Wallet" />
       </div>
-      <div className="absolute top-8 right-10 flex items-center gap-3 bg-white/80 backdrop-blur-sm rounded-full px-4 py-1.5 shadow-md border border-gray-200">
-        <span className="text-sm font-bold text-gray-700">Game Token: </span>
-        <div className="flex items-center justify-center w-7 h-7 bg-blue-500 rounded-full">
-          <span className="text-white font-bold text-xs">{gameToken}</span>
+      {/* Game token top right */}
+      <div className="absolute top-8 right-10 flex items-center gap-2 sm:gap-3 bg-white/80 backdrop-blur-sm rounded-full px-3 sm:px-4 py-1 sm:py-1.5 shadow-md border border-gray-200">
+        <span className="text-xs sm:text-sm font-bold text-gray-700">
+          Game Token:{" "}
+        </span>
+        <div className="flex items-center justify-center w-6 h-6 sm:w-6 sm:h-6 md:w-5 md:h-5 bg-blue-500 rounded-full">
+          <span className="text-white font-bold text-[0.6rem] sm:text-xs">
+            {gameToken}
+          </span>
         </div>
-        <span className="text-black font-medium text-md">BRT</span>
+        <span className="text-black font-medium text-sm sm:text-md">BRT</span>
       </div>
-      <div className="bg-black/80 backdrop-blur-lg p-8 rounded-xl border border-white/20 max-w-md w-1/2 h-1/2 shadow-2xl text-center transform animate-bounce-in">
-        <h2 className="text-3xl font-bold text-red-500 mb-6">GAME OVER</h2>
+      {/* End */}
+      <div className="bg-black/80 backdrop-blur-lg p-8 rounded-xl border border-white/20 max-w-md w-1/2 h-fit shadow-2xl text-center transform animate-bounce-in">
+        <h2 className="text-4xl font-bold text-red-500 mb-6">GAME OVER</h2>
 
         <div className="space-y-4 mb-8">
           {/* Game stats display */}
@@ -168,7 +174,7 @@ const GameButton = ({ onClick, icon, label, variant = "primary" }) => {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center z-50 justify-center mx-auto bg-gradient-to-r text-white font-bold py-3 px-8 rounded-full transition-all duration-300 shadow-lg hover:shadow-[color]/30 group ${variants[variant]}`}
+      className={`flex items-center z-50 mt-2 w-fit h-fit border-2 border-white justify-center mx-auto bg-gradient-to-r text-white font-bold py-3 px-8 rounded-md transition-all duration-300 shadow-lg hover:shadow-[color]/30 group ${variants[variant]}`}
     >
       {icon}
       {label}

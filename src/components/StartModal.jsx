@@ -128,12 +128,17 @@ function StartModal({ onStart }) {
           </div>
         </div>
       </div>
-      <div className="absolute top-8 right-10 flex items-center gap-3 bg-white/80 backdrop-blur-sm rounded-full px-4 py-1.5 shadow-md border border-gray-200">
-        <span className="text-sm font-bold text-gray-700">Game Token: </span>
-        <div className="flex items-center justify-center w-7 h-7 bg-blue-500 rounded-full">
-          <span className="text-white font-bold text-xs">{gameToken}</span>
+      {/* Game Token top right */}
+      <div className="absolute top-8 right-10 flex items-center gap-2 sm:gap-3 bg-white/80 backdrop-blur-sm rounded-full px-3 sm:px-4 py-1 sm:py-1.5 shadow-md border border-gray-200">
+        <span className="text-xs sm:text-sm font-bold text-gray-700">
+          Game Token:{" "}
+        </span>
+        <div className="flex items-center justify-center w-6 h-6 sm:w-6 sm:h-6 md:w-7 md:h-7 bg-blue-500 rounded-full">
+          <span className="text-white font-bold text-[0.6rem] sm:text-xs">
+            {gameToken}
+          </span>
         </div>
-        <span className="text-black font-medium text-md">BRT</span>
+        <span className="text-black font-medium text-sm sm:text-md">BRT</span>
       </div>
 
       <div className="bg-black/80 backdrop-blur-lg p-8 rounded-xl border border-white/20 max-w-md w-full h-fit shadow-2xl text-center transform transition-all hover:scale-105">
@@ -149,13 +154,13 @@ function StartModal({ onStart }) {
         <div className="flex justify-center h-10">
           <button
             onClick={handleCheckRunnerRegistered}
-            className="flex items-center justify-center text-center bg-blue-600 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold py-3 px-8 w-80 rounded-md hover:from-cyan-600 hover:to-blue-700 transition-all duration-300 shadow-lg hover:shadow-cyan-500/30 group"
+            className="flex items-center justify-center text-center bg-blue-600 w-fit h-fit border-2 border-white bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold py-3 px-8 rounded-md hover:from-cyan-600 hover:to-blue-700 transition-all duration-300 shadow-lg hover:shadow-cyan-500/30 group"
           >
             <Play className="w-5 h-5 mr-2 group-hover:translate-x-1 transition-transform" />
             START GAME
           </button>
         </div>
-
+        <br />
         <div className="mt-8 grid grid-cols-3 gap-4 text-xs text-gray-400 space-y-6">
           <div className="flex flex-col items-center">
             <div className="bg-gray-700 w-10 h-10 rounded-lg flex items-center justify-center mb-1">
