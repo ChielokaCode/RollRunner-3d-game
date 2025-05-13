@@ -11,6 +11,8 @@ import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { base, baseSepolia } from "wagmi/chains";
 import { config } from "./wagmi";
 import MarketPlacePage from "./pages/MarketPlacePage";
+import BuyToken from "./pages/BuyToken";
+import LoginPage from "./pages/LoginPage";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +42,8 @@ function App() {
                   path="/marketplace"
                   element={<MarketPlacePage />}
                 />
+                <Route exact path="/buyTokens" element={<BuyToken />} />
+                <Route exact path="/login" element={<LoginPage />} />
               </Routes>
               <Toaster />
             </Router>

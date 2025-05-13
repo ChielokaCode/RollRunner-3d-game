@@ -1,5 +1,5 @@
 export const baseRunnerContract = {
-  address: "0xbcCBab8702150D48B5881E87516E245C28113d68",
+  address: "0x03AEE8d6e5ed33BE7520eeC74A85C12a7F5bBEa7",
   abi: [
     {
       inputs: [{ internalType: "address", name: "_owner", type: "address" }],
@@ -79,6 +79,25 @@ export const baseRunnerContract = {
           type: "uint256",
         },
       ],
+      name: "StartGamePaid",
+      type: "event",
+    },
+    {
+      anonymous: false,
+      inputs: [
+        {
+          indexed: true,
+          internalType: "address",
+          name: "runner",
+          type: "address",
+        },
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "amount",
+          type: "uint256",
+        },
+      ],
       name: "TokensMinted",
       type: "event",
     },
@@ -111,7 +130,42 @@ export const baseRunnerContract = {
     },
     {
       inputs: [],
+      name: "ENTRY_FEE2",
+      outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "ENTRY_FEE3",
+      outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [],
       name: "ENTRY_REWARD",
+      outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "ENTRY_REWARD2",
+      outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "ENTRY_REWARD3",
+      outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "GAME_FEE",
       outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
       stateMutability: "view",
       type: "function",
@@ -218,6 +272,15 @@ export const baseRunnerContract = {
       inputs: [
         { internalType: "address", name: "_runnerAddress", type: "address" },
       ],
+      name: "getRunnerName",
+      outputs: [{ internalType: "string", name: "", type: "string" }],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [
+        { internalType: "address", name: "_runnerAddress", type: "address" },
+      ],
       name: "getTokenBalance",
       outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
       stateMutability: "view",
@@ -234,14 +297,48 @@ export const baseRunnerContract = {
       inputs: [
         { internalType: "address", name: "_runnerAddress", type: "address" },
       ],
-      name: "payEntryFee",
-      outputs: [],
+      name: "payEntryFee100",
+      outputs: [{ internalType: "string", name: "", type: "string" }],
+      stateMutability: "payable",
+      type: "function",
+    },
+    {
+      inputs: [
+        { internalType: "address", name: "_runnerAddress", type: "address" },
+      ],
+      name: "payEntryFee1000",
+      outputs: [{ internalType: "string", name: "", type: "string" }],
+      stateMutability: "payable",
+      type: "function",
+    },
+    {
+      inputs: [
+        { internalType: "address", name: "_runnerAddress", type: "address" },
+      ],
+      name: "payEntryFee500",
+      outputs: [{ internalType: "string", name: "", type: "string" }],
       stateMutability: "payable",
       type: "function",
     },
     {
       inputs: [],
       name: "resetAllRunners",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        { internalType: "address", name: "_runnerAddress", type: "address" },
+      ],
+      name: "startGameFee",
+      outputs: [{ internalType: "string", name: "", type: "string" }],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [{ internalType: "address", name: "newOwner", type: "address" }],
+      name: "transferOwnership",
       outputs: [],
       stateMutability: "nonpayable",
       type: "function",

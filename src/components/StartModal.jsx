@@ -2,32 +2,37 @@ import React, { useEffect, useState } from "react";
 // import { useAccount } from "wagmi";
 import { Play } from "lucide-react";
 import WalletWrapper from "./WalletWrapper";
-import { userOutlineIcon } from "@progress/kendo-svg-icons";
+import {
+  userOutlineIcon,
+  heartIcon,
+  myspaceIcon,
+} from "@progress/kendo-svg-icons";
 
 import "@coinbase/onchainkit/styles.css";
-import Login from "./Login";
 import { Button } from "@progress/kendo-react-buttons";
-import { SvgIcon } from "@progress/kendo-react-common";
+import { base, SvgIcon } from "@progress/kendo-react-common";
 
 import toast from "react-hot-toast";
 import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import { baseRunnerContract } from "../context/BaseRunnerContract";
 import { parseAbi, parseEther } from "viem";
+import { useNavigate } from "react-router-dom";
 
 function StartModal({ onStart }) {
-  const [isLogin, setIsLogin] = useState(false);
+  const navigate = useNavigate();
   const [gameToken, setGameToken] = useState(0);
   const { writeContractAsync } = useWriteContract();
   const account = useAccount();
   const { isConnected, address: runnerAddress } = useAccount();
-  const abi = parseAbi(["function checkRunner(address) returns (bool)"]);
+  const StartGameAbi = parseAbi([
+    "function startGameFee(address) returns (string)",
+  ]);
   const getTokenAbi = parseAbi([
     "function getTokenBalance(address) view returns (uint256)",
   ]);
-  const payEntryFeeAbi = parseAbi(["function payEntryFee(address)"]);
 
   const handleLogin = () => {
-    setIsLogin(true);
+    navigate("/login");
   };
 
   const { data, error } = useReadContract({
@@ -50,10 +55,6 @@ function StartModal({ onStart }) {
     }
   }, [data, error]);
 
-  const handleCloseLogin = () => {
-    setIsLogin(!isLogin);
-  };
-
   const handleCheckRunnerRegistered = async (e) => {
     e.preventDefault();
 
@@ -61,53 +62,41 @@ function StartModal({ onStart }) {
       toast.error("Please connect your Wallet!");
       return;
     }
-    //TODO: fix this for unregistered runner still playing game, the check if registered is not working correctly for unregisterd runners
     try {
       await writeContractAsync(
         {
           address: baseRunnerContract.address,
-          abi: abi,
-          functionName: "checkRunner",
+          abi: StartGameAbi,
+          functionName: "startGameFee",
           args: [account.address],
         },
         {
-          onSettled: async (data, error) => {
-            if (error) {
-              toast.error("Player hasn't logged in yet");
-              return;
+          onSettled(data) {
+            if (data) {
+              toast.success("Starting Game!");
+              onStart();
             }
-
-            try {
-              await writeContractAsync(
-                {
-                  address: baseRunnerContract.address,
-                  abi: payEntryFeeAbi,
-                  functionName: "payEntryFee",
-                  args: [account.address],
-                  value: parseEther("0.001"), // Ensure entry fee is sent
-                },
-                {
-                  onSettled: (data, error) => {
-                    if (error) {
-                      toast.error("Error paying Entry Fee");
-                    } else {
-                      toast.success("Starting Game!");
-                      onStart();
-                    }
-                  },
-                }
-              );
-            } catch (error) {
-              toast.error("Failed to process entry fee");
-              console.error("Transaction failed", error);
+          },
+          onError: async (error) => {
+            if (error) {
+              toast.error("Insufficient Balance");
+              return;
             }
           },
         }
       );
     } catch (error) {
-      toast.error("Failed to check runner registration");
+      toast.error("Failed to START GAME");
       console.error("Transaction failed", error);
     }
+  };
+
+  const handleMarketPlace = () => {
+    navigate("/marketplace");
+  };
+
+  const handleBuyTokens = () => {
+    navigate("/buyTokens");
   };
 
   return (
@@ -124,7 +113,28 @@ function StartModal({ onStart }) {
               icon={userOutlineIcon}
               className="w-5 h-5 text-gray-500 transition duration-75"
             />
-            {isLogin ? <Login onClose={handleCloseLogin} /> : null}
+          </div>
+        </div>
+        <div className="ml-6">
+          <div
+            onClick={handleBuyTokens}
+            className="w-8 h-8 bg-white border-2 rounded-md border-blue-500 cursor-pointer transition-colors duration-200 flex items-center justify-center"
+          >
+            <SvgIcon
+              icon={heartIcon}
+              className="w-5 h-5 text-gray-500 transition duration-75"
+            />
+          </div>
+        </div>
+        <div className="ml-6">
+          <div
+            onClick={handleMarketPlace}
+            className="w-8 h-8 bg-white border-2 rounded-md border-blue-500 cursor-pointer transition-colors duration-200 flex items-center justify-center"
+          >
+            <SvgIcon
+              icon={myspaceIcon}
+              className="w-5 h-5 text-gray-500 transition duration-75"
+            />
           </div>
         </div>
       </div>

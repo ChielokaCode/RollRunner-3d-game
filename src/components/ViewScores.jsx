@@ -4,6 +4,7 @@ import { useAccount } from "wagmi";
 import { baseRunnerContract } from "../context/BaseRunnerContract";
 import { parseAbi } from "viem";
 import { useReadContract } from "wagmi";
+import { Navigate, useNavigate } from "react-router-dom";
 
 const ViewScores = () => {
   const [scoresList, setScoreList] = useState([]);
@@ -11,6 +12,7 @@ const ViewScores = () => {
   const abi = parseAbi([
     "function getAllScoresByRunner(address) view returns ((uint256 id, string score)[])",
   ]);
+  const navigate = useNavigate();
 
   const { data, isLoading, error, refetch } = useReadContract({
     address: baseRunnerContract.address,
@@ -115,7 +117,7 @@ const ViewScores = () => {
   }
 
   const handleClose = () => {
-    window.location.reload();
+    navigate(-1);
   };
 
   return (

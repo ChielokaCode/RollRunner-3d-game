@@ -7,7 +7,6 @@ import DistanceBar from "./DistanceBar";
 import GameTimer from "./GameTimer";
 import HealthBar from "./HealthBar";
 import WalletWrapper from "./WalletWrapper";
-import Login from "./Login";
 import ViewScores from "./ViewScores";
 
 export {
@@ -20,6 +19,5 @@ export {
   GameTimer,
   HealthBar,
   WalletWrapper,
-  Login,
   ViewScores,
 };
