@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-// import { useAccount } from "wagmi";
 import { Play } from "lucide-react";
 import WalletWrapper from "./WalletWrapper";
 import {
@@ -9,18 +8,18 @@ import {
 } from "@progress/kendo-svg-icons";
 
 import "@coinbase/onchainkit/styles.css";
-import { Button } from "@progress/kendo-react-buttons";
-import { base, SvgIcon } from "@progress/kendo-react-common";
+import { SvgIcon } from "@progress/kendo-react-common";
 
 import toast from "react-hot-toast";
 import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import { baseRunnerContract } from "../context/BaseRunnerContract";
-import { parseAbi, parseEther } from "viem";
+import { parseAbi } from "viem";
 import { useNavigate } from "react-router-dom";
 
 function StartModal({ onStart }) {
   const navigate = useNavigate();
   const [gameToken, setGameToken] = useState(0);
+  const [nameOfRunner, setNameOfRunner] = useState("");
   const { writeContractAsync } = useWriteContract();
   const account = useAccount();
   const { isConnected, address: runnerAddress } = useAccount();
@@ -30,11 +29,15 @@ function StartModal({ onStart }) {
   const getTokenAbi = parseAbi([
     "function getTokenBalance(address) view returns (uint256)",
   ]);
+  const runnerNameAbi = parseAbi([
+    "function getRunnerName(address) returns (string)",
+  ]);
 
   const handleLogin = () => {
     navigate("/login");
   };
 
+  //Get Token Balance
   const { data, error } = useReadContract({
     address: baseRunnerContract.address,
     abi: getTokenAbi,
@@ -44,6 +47,10 @@ function StartModal({ onStart }) {
   });
 
   useEffect(() => {
+    if (!isConnected) {
+      return;
+    }
+
     if (data) {
       console.log(data);
       setGameToken(data);
@@ -55,13 +62,43 @@ function StartModal({ onStart }) {
     }
   }, [data, error]);
 
-  const handleCheckRunnerRegistered = async (e) => {
+  //Get Runner Name
+  const { data: runnerNameData, error: runnerNameError } = useReadContract({
+    address: baseRunnerContract.address,
+    abi: runnerNameAbi,
+    functionName: "getRunnerName",
+    args: isConnected ? [runnerAddress] : undefined,
+    enabled: isConnected,
+  });
+
+  useEffect(() => {
+    if (!isConnected) {
+      return;
+    }
+
+    if (runnerNameData) {
+      console.log(runnerNameData);
+      setNameOfRunner(runnerNameData);
+    }
+
+    if (runnerNameError) {
+      console.log("Failed to fetch Runner Name");
+    }
+  }, [runnerNameData, runnerNameError]);
+
+  //handle check if runner is registered
+  const handleStartGame = async (e) => {
     e.preventDefault();
 
     if (!isConnected) {
       toast.error("Please connect your Wallet!");
       return;
     }
+    if (gameToken == 0 || gameToken < 50) {
+      toast.error("Buy tokens to Continue");
+      return;
+    }
+
     try {
       await writeContractAsync(
         {
@@ -79,7 +116,7 @@ function StartModal({ onStart }) {
           },
           onError: async (error) => {
             if (error) {
-              toast.error("Insufficient Balance");
+              toast.error("Transaction failed");
               return;
             }
           },
@@ -153,7 +190,10 @@ function StartModal({ onStart }) {
 
       <div className="bg-black/80 backdrop-blur-lg p-8 rounded-xl border border-white/20 max-w-md w-full h-fit shadow-2xl text-center transform transition-all hover:scale-105">
         <h1 className="text-3xl font-bold text-white mb-6">
-          Welcome, BASE RUNNER
+          Welcome,{" "}
+          {nameOfRunner == "" || nameOfRunner == null
+            ? "BASE RUNNER"
+            : nameOfRunner}
         </h1>
 
         <div className="text-cyan-400 mb-8">
@@ -163,7 +203,7 @@ function StartModal({ onStart }) {
         <br />
         <div className="flex justify-center h-10">
           <button
-            onClick={handleCheckRunnerRegistered}
+            onClick={handleStartGame}
             className="flex items-center justify-center text-center bg-blue-600 w-fit h-fit border-2 border-white bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold py-3 px-8 rounded-md hover:from-cyan-600 hover:to-blue-700 transition-all duration-300 shadow-lg hover:shadow-cyan-500/30 group"
           >
             <Play className="w-5 h-5 mr-2 group-hover:translate-x-1 transition-transform" />
@@ -209,6 +249,10 @@ function StartModal({ onStart }) {
             <span>Zoom out</span>
           </div>
         </div>
+        <br />
+        <span className="text-white items-center justify-center">
+          Note: Start Game requires 50 BRT token
+        </span>
       </div>
     </div>
   );

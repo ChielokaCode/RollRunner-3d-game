@@ -117,7 +117,7 @@ const ViewScores = () => {
   }
 
   const handleClose = () => {
-    navigate(-1);
+    navigate("/");
   };
 
   return (
