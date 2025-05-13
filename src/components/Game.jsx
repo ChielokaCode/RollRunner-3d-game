@@ -104,12 +104,12 @@ const Game = () => {
   );
 
   //TODO jump camera
-  const jumpCamera = new THREE.PerspectiveCamera(
-    75,
-    window.innerWidth / window.innerHeight,
-    0.1,
-    1000
-  );
+  // const jumpCamera = new THREE.PerspectiveCamera(
+  //   75,
+  //   window.innerWidth / window.innerHeight,
+  //   0.1,
+  //   1000
+  // );
 
   //TODO : Lights
   const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
@@ -132,17 +132,6 @@ const Game = () => {
   fillLight.position.set(-5, 5, -5);
   scene.add(fillLight); // Add to scene
 
-  //TODO : Default Material
-  // const defaultMaterial = new CANNON.Material("default");
-  // const defaultContactMaterial = new CANNON.ContactMaterial(
-  //   defaultMaterial,
-  //   defaultMaterial,
-  //   {
-  //     friction: 0.1,
-  //     restitution: 0.7,
-  //   }
-  // );
-  // world.addContactMaterial(defaultContactMaterial);
   //TODO : HDR
   // const rgbeLoader = new RGBELoader();
   // rgbeLoader.load("/textures/environmentMap/meadow_2_4k.hdr", (texture) => {
@@ -190,52 +179,30 @@ const Game = () => {
     plant = gltf.scene;
   });
 
-  //TODO :Actor Mesh
-  // Load actor model
-  // loader.load("/textures/football/dirty_football_2k.gltf", (gltf) => {
-  //   actorMesh = gltf.scene;
-  //   actorMesh.scale.set(4, 4, 4);
-  //   scene.add(actorMesh);
-
-  //   const actorShape = new CANNON.Sphere(0.5);
-  //   actorBody = new CANNON.Body({
-  //     mass: 1,
-  //     shape: actorShape,
-  //     position: new CANNON.Vec3(0, 0.1, 0), // Changed to y=0.1
-  //     linearDamping: 0.99,
-  //     angularDamping: 0.99,
-  //     fixedRotation: true,
-  //   });
-
-  //   actorBody.velocity.set(0, 0, 0);
-  //   actorBody.angularVelocity.set(0, 0, 0);
-  //   world.addBody(actorBody);
-  //   actorMesh.position.copy(actorBody.position);
-  // });
-
   // Replace the GLTF loader with a simple cube creation
-  const cubeGeometry = new THREE.BoxGeometry(0.6, 0.6, 0.6); // 1x1x1 cube
-  const cubeMaterial = new THREE.MeshStandardMaterial({
+  const sphereGeometry = new THREE.SphereGeometry(0.5, 32, 32); // Sphere with radius 0.5
+  const sphereMaterial = new THREE.MeshStandardMaterial({
     color: 0x00aaff, // Blue color
     metalness: 0.3,
     roughness: 0.7,
   });
 
-  actorMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
-  actorMesh.position.y = 0.2;
-  actorMesh.scale.set(1, 1, 1); // No need to scale up like the football
+  actorMesh = new THREE.Mesh(sphereGeometry, sphereMaterial);
+  actorMesh.position.y = 0.5; // Raised above the ground
+  actorMesh.scale.set(1, 1, 1); // Scale the sphere to keep it 1x1x1
   scene.add(actorMesh);
 
   // Change physics body to match cube shape
-  const actorShape = new CANNON.Box(new CANNON.Vec3(0.3, 0.3, 0.3)); // Half-size of 1x1x1 cube
+  const actorShape = new CANNON.Sphere(0.5); // Sphere-shaped physics body with radius 0.5
   actorBody = new CANNON.Body({
     mass: 1,
-    shape: actorShape,
-    position: new CANNON.Vec3(0, 0.1, 0),
+    position: new CANNON.Vec3(0, 0.5, 0), // Position the physics body the same as the mesh
     linearDamping: 0.99,
     angularDamping: 0.99,
-    fixedRotation: false, // Changed to false to allow cube to rotate naturally
+    fixedRotation: false, // Allow rotation naturally
   });
+
+  actorBody.addShape(actorShape); // Add the sphere shape to the physics body
 
   actorBody.velocity.set(0, 0, 0);
   actorBody.angularVelocity.set(0, 0, 0);
@@ -439,7 +406,7 @@ const Game = () => {
   audioLoader.load("/sounds/background.mp3", (buffer) => {
     ambientSound.setBuffer(buffer);
     ambientSound.setLoop(true);
-    ambientSound.setVolume(0.5);
+    ambientSound.setVolume(0.2);
   });
 
   window.addEventListener("keyup", (e) => {
@@ -490,6 +457,7 @@ const Game = () => {
       if (ambientSound.isPlaying) {
         ambientSound.stop();
       } else {
+        ambientSound.setVolume(0.1);
         ambientSound.play();
       }
     }
@@ -568,35 +536,6 @@ const Game = () => {
     }
   };
 
-  // const checkCollisions = (obstacle) => {
-  //   if (!actorBody || !actorMesh) return;
-
-  //   // Check floor contact first
-  //   checkGroundContact();
-
-  //   // Check obstacle collisions
-  //   // obstaclesRef.current.forEach((obstacle) => {
-  //   if (!obstacle?.mesh || !obstacle?.body) return;
-
-  //   // Calculate distance between actor and obstacle
-  //   const distance = actorBody.position.distanceTo(obstacle.body.position);
-
-  //   // Skip if too far away
-  //   if (distance > 0.05) return;
-
-  //   // More precise collision check using Cannon-es
-  //   if (world.overlapCheck(actorBody, obstacle.body)) {
-  //     if (!obstacle.collided) {
-  //       // Only trigger once per obstacle
-  //       obstacle.collided = true;
-  //       handleCollision();
-  //     }
-  //   } else {
-  //     obstacle.collided = false; // Reset for next pass
-  //   }
-  //   //});
-  // };
-
   const checkGroundContact = () => {
     if (!actorBody) return;
 
@@ -629,24 +568,6 @@ const Game = () => {
       // Reset any jump-related states here
     }
   };
-
-  // const handleCollision = () => {
-  //   noOfCollisionsRef.current += 1;
-
-  //   const collisions = document.getElementById("collisions");
-  //   if (collisions) {
-  //     collisions.innerText = `${Math.floor(noOfCollisionsRef.current)}`;
-  //   }
-
-  //   //Visual feedback
-  //   const hitFlash = document.getElementById("hit-flash");
-  //   if (hitFlash) {
-  //     hitFlash.style.opacity = "0.5";
-  //     setTimeout(() => {
-  //       hitFlash.style.opacity = "0";
-  //     }, 200);
-  //   }
-  // };
 
   const handleCollision = () => {
     noOfCollisionsRef.current += 1;
@@ -740,18 +661,31 @@ const Game = () => {
 
   //jump
   const jump = () => {
-    // Only allow jump if game has started and actor is on ground
     if (!gameStart || isJumping) return;
 
-    // Verify we're on ground using raycasting
-    // const ray = new CANNON.Ray(actorBody.position, new CANNON.Vec3(0, -1, 0));
-    // const rayResult = new CANNON.RaycastResult();
-    // world.raycastClosest(ray, {}, rayResult);
-
-    // if (rayResult.hasHit && rayResult.distance < 0.6) {
-    actorBody.velocity.y = 10;
     isJumping = true;
     jumpAudio.play();
+
+    const maxJumpHeight = 10; // Max Y position
+    const jumpDuration = 0.3; // How fast to go up or down
+
+    // Smooth jump up
+    gsap.to(actorBody.position, {
+      y: maxJumpHeight,
+      duration: jumpDuration,
+      ease: "power2.out", // Smooth acceleration
+      onComplete: () => {
+        // Smooth land back down
+        gsap.to(actorBody.position, {
+          y: 0,
+          duration: jumpDuration,
+          ease: "power2.in", // Fast drop
+          onComplete: () => {
+            isJumping = false;
+          },
+        });
+      },
+    });
   };
 
   let animationId;
@@ -811,8 +745,6 @@ const Game = () => {
         checkCollisions(obstacle);
       });
 
-      //checkCollisions();
-
       //update Actor life
       const currentCollisions = noOfCollisionsRef.current;
       const actorLifePercent = Math.max(
@@ -863,7 +795,7 @@ const Game = () => {
       if (actorMesh && actorBody) {
         //actorBody.angularVelocity.set(1, 0, 0);
         actorMesh.position.copy(actorBody.position);
-        actorMesh.quaternion.copy(actorBody.quaternion); // If you allow rotation
+        actorMesh.quaternion.copy(actorBody.quaternion);
       }
 
       // Update camera position with smooth follow
@@ -905,23 +837,7 @@ const Game = () => {
       }
     }
 
-    // Update jumpCamera to always look at actor from side
-    if (actorBody && actorMesh) {
-      if (isJumping) {
-        if (actorBody.position.y > 0.1) {
-          jumpCamera.position.set(
-            actorMesh.position.x - 3, // not full side (-5), slight diagonal
-            actorMesh.position.y + 5, // higher view to show jump arc
-            actorMesh.position.z - 6 // slight backward for depth
-          );
-          jumpCamera.lookAt(actorMesh.position);
-        }
-      }
-    }
-
-    const cameraToUse = isJumping ? jumpCamera : camera;
-
-    renderer.render(scene, cameraToUse);
+    renderer.render(scene, camera);
   };
 
   const restartGame = () => {
@@ -997,11 +913,6 @@ const Game = () => {
   return (
     <div className="relative w-full h-screen overflow-hidden">
       <div id="app" ref={mountRef} className="absolute inset-0" />
-
-      {/* <div
-        id="hit-flash"
-        className="fixed top-0 left-0 w-full h-full bg-red-500 opacity-0 pointer-events-none transition-opacity duration-300 z-[1000]"
-      ></div> */}
       <div
         id="hit-flash"
         className="fixed top-0 left-0 w-full h-full bg-red-500 pointer-events-none"
@@ -1040,7 +951,7 @@ const Game = () => {
           onClick={() => simulateKey("a")}
           className="absolute left-0 top-0 w-1/5 h-full bg-black bg-opacity-20 flex items-center justify-center text-white text-xl"
         >
-          👈 Left
+          👈A - Left
         </div>
 
         {/* Right Tap Zone */}
@@ -1048,7 +959,7 @@ const Game = () => {
           onClick={() => simulateKey("d")}
           className="absolute right-0 top-0 w-1/5 h-full bg-black bg-opacity-20 flex items-center justify-center text-white text-xl"
         >
-          Right 👉
+          D - Right 👉
         </div>
 
         {/* Jump Tap Zone */}
@@ -1056,14 +967,14 @@ const Game = () => {
           onClick={() => simulateKey("Space")}
           className="absolute bottom-0 left-1/3 w-1/3 h-1/6 bg-black bg-opacity-20 flex items-center justify-center text-white text-xl"
         >
-          ⬆️ Jump
+          ⬆️ Space - Jump
         </div>
 
         <div
           onClick={() => simulateKey("m")}
           className="absolute top-0 left-1/3 w-1/3 h-1/6 bg-black bg-opacity-20 flex items-center justify-center text-white text-xl"
         >
-          ⬆️ Music
+          ⬆️ M - Music
         </div>
       </div>
     </div>

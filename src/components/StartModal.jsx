@@ -38,7 +38,7 @@ function StartModal({ onStart }) {
   };
 
   //Get Token Balance
-  const { data, error } = useReadContract({
+  const { data, error, refetch } = useReadContract({
     address: baseRunnerContract.address,
     abi: getTokenAbi,
     functionName: "getTokenBalance",
@@ -54,7 +54,8 @@ function StartModal({ onStart }) {
     if (data) {
       console.log(data);
       setGameToken(data);
-      toast.success("Game Token fetched successfully!");
+      //toast.success("Game Token fetched successfully!");
+      refetch();
     }
 
     if (error) {
@@ -79,6 +80,7 @@ function StartModal({ onStart }) {
     if (runnerNameData) {
       console.log(runnerNameData);
       setNameOfRunner(runnerNameData);
+      refetch();
     }
 
     if (runnerNameError) {
@@ -189,24 +191,22 @@ function StartModal({ onStart }) {
       </div>
 
       <div className="bg-black/80 backdrop-blur-lg p-8 rounded-xl border border-white/20 max-w-md w-full h-fit shadow-2xl text-center transform transition-all hover:scale-105">
-        <h1 className="text-3xl font-bold text-white mb-6">
+        <span className="text-4xl font-bold text-white mb-6 mt-4">
           Welcome,{" "}
           {nameOfRunner == "" || nameOfRunner == null
             ? "BASE RUNNER"
             : nameOfRunner}
-        </h1>
-
+        </span>
         <div className="text-cyan-400 mb-8">
           Navigate the obstacles and survive as long as possible!
         </div>
-
         <br />
         <div className="flex justify-center h-10">
           <button
             onClick={handleStartGame}
-            className="flex items-center justify-center text-center bg-blue-600 w-fit h-fit border-2 border-white bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold py-3 px-8 rounded-md hover:from-cyan-600 hover:to-blue-700 transition-all duration-300 shadow-lg hover:shadow-cyan-500/30 group"
+            className="flex items-center justify-center text-center hover:bg-white/10 transition-colors bg-blue-600 w-fit h-fit border-2 border-white bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold py-3 px-8 rounded-md hover:from-cyan-600 hover:to-blue-700 duration-300 shadow-lg hover:shadow-cyan-500/30 group"
           >
-            <Play className="w-5 h-5 mr-2 group-hover:translate-x-1 transition-transform" />
+            <Play className="w-5 h-5 mr-2 group-hover:translate-x-1 hover:bg-white/10 transition-colors" />
             START GAME
           </button>
         </div>
@@ -250,9 +250,10 @@ function StartModal({ onStart }) {
           </div>
         </div>
         <br />
-        <span className="text-white items-center justify-center">
-          Note: Start Game requires 50 BRT token
-        </span>
+        <div className="text-white items-center justify-center">
+          <div className="text-red-500">Note:</div> Start Game requires 50 BRT
+          token
+        </div>
       </div>
     </div>
   );

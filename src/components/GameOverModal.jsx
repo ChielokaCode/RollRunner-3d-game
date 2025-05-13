@@ -37,7 +37,7 @@ function GameOverModal({ distance, time, collisions, restartGame }) {
     setScore(calculatedScore);
   };
 
-  const { data, error } = useReadContract({
+  const { data, error, refetch } = useReadContract({
     address: baseRunnerContract.address,
     abi: getTokenAbi,
     functionName: "getTokenBalance",
@@ -49,7 +49,8 @@ function GameOverModal({ distance, time, collisions, restartGame }) {
     if (data) {
       console.log(data);
       setGameToken(data);
-      toast.success("Game Token fetched successfully!");
+      //toast.success("Game Token fetched successfully!");
+      refetch();
     }
 
     if (error) {

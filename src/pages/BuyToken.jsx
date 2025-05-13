@@ -22,18 +22,19 @@ const BuyToken = () => {
   const payEntryFeeAbi500 = parseAbi(["function payEntryFee500(address)"]);
   const payEntryFeeAbi1000 = parseAbi(["function payEntryFee1000(address)"]);
 
-  const { data, error } = useReadContract({
+  const { data, error, refetch } = useReadContract({
     address: baseRunnerContract.address,
     abi: getTokenAbi,
     functionName: "getTokenBalance",
-    args: [runnerAddress], // Add your args here
+    args: [runnerAddress],
   });
 
   useEffect(() => {
     if (data) {
       console.log(data);
       setGameToken(data);
-      toast.success("Game Token fetched successfully!");
+      //toast.success("Game Token fetched successfully!");
+      refetch();
     }
 
     if (error) {
@@ -59,7 +60,7 @@ const BuyToken = () => {
         {
           onSettled: async (data, error) => {
             if (error) {
-              toast.error("Insufficient Balance");
+              //toast.error("Insufficient Balance");
             } else {
               toast.success("100 BRT purchased successfully!");
             }
@@ -90,7 +91,7 @@ const BuyToken = () => {
         {
           onSettled: async (data, error) => {
             if (error) {
-              toast.error("Insufficient Balance");
+              //toast.error("Insufficient Balance");
               return;
             } else {
               toast.success("500 BRT purchased successfully!");
@@ -122,7 +123,7 @@ const BuyToken = () => {
         {
           onSettled: async (data, error) => {
             if (error) {
-              toast.error("Insufficient Balance");
+              //toast.error("Insufficient Balance");
               return;
             } else {
               toast.success("1000 BRT purchased successfully!");
@@ -141,7 +142,7 @@ const BuyToken = () => {
       {/* Back button */}
       <button
         onClick={() => navigate(-1)}
-        className="absolute top-8 left-10 p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors duration-200"
+        className="absolute top-8 left-10 p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors duration-200 flex items-center"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -157,7 +158,7 @@ const BuyToken = () => {
             d="M10 19l-7-7m0 0l7-7m-7 7h18"
           />
         </svg>
-        <span className="text-white font-bold">Back</span>
+        <span className="text-white font-bold ml-2">Back</span>
       </button>
 
       {/* Game Token display */}
@@ -173,23 +174,24 @@ const BuyToken = () => {
         <span className="text-black font-medium text-sm sm:text-md">BRT</span>
       </div>
 
-      {/* Token packages */}
-
-      <div className="flex flex-col md:flex-row gap-6 px-4 py-8">
+      {/* Token packages - now in horizontal row */}
+      <div className="flex flex-row flex-wrap justify-center gap-6 px-4 py-8 w-full max-w-6xl mx-auto">
         {/* 100 BRT Package */}
-        <div className="bg-white/10 backdrop-blur-md rounded-xl overflow-hidden shadow-lg border border-white/20 transition-transform duration-300 hover:scale-105">
-          <div className="p-6">
-            <img
-              src="/images/token-100.png" // Replace with your image path
-              alt="100 BRT Token Package"
-              className="w-full h-32 object-cover rounded-lg mb-4"
-            />
-            <div className="text-center">
+        <div className="bg-white/10 backdrop-blur-md rounded-xl overflow-hidden shadow-lg border border-white/20 transition-transform duration-300 hover:scale-105 flex flex-col items-center min-w-[280px]">
+          <div className="p-6 w-full flex flex-col items-center">
+            <div className="w-32 h-32 mb-4 flex items-center justify-center bg-white/5 rounded-md p-2">
+              <img
+                src="./100BRT.png"
+                alt="100 BRT Token Package"
+                className="w-20 h-20 object-cover"
+              />
+            </div>
+            <div className="text-center w-full">
               <h3 className="text-xl font-bold text-white mb-2">100 BRT</h3>
               <p className="text-gray-300 mb-4">for 0.001 ETH</p>
               <button
                 onClick={() => handleBuy100BRT()}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+                className="w-full max-w-xs mx-auto border-2 border-white bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
               >
                 Buy 100 BRT
               </button>
@@ -198,19 +200,21 @@ const BuyToken = () => {
         </div>
 
         {/* 500 BRT Package */}
-        <div className="bg-white/10 backdrop-blur-md rounded-xl overflow-hidden shadow-lg border border-white/20 transition-transform duration-300 hover:scale-105">
-          <div className="p-6">
-            <img
-              src="/images/token-500.png" // Replace with your image path
-              alt="500 BRT Token Package"
-              className="w-full h-32 object-cover rounded-lg mb-4"
-            />
-            <div className="text-center">
+        <div className="bg-white/10 backdrop-blur-md rounded-xl overflow-hidden shadow-lg border border-white/20 transition-transform duration-300 hover:scale-105 flex flex-col items-center min-w-[280px]">
+          <div className="p-6 w-full flex flex-col items-center">
+            <div className="w-32 h-32 mb-4 flex items-center justify-center bg-white/5 rounded-md p-2">
+              <img
+                src="./500BRT.png"
+                alt="500 BRT Token Package"
+                className="w-20 h-20 object-cover"
+              />
+            </div>
+            <div className="text-center w-full">
               <h3 className="text-xl font-bold text-white mb-2">500 BRT</h3>
               <p className="text-gray-300 mb-4">for 0.005 ETH</p>
               <button
                 onClick={() => handleBuy500BRT()}
-                className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+                className="w-full max-w-xs mx-auto border-2 border-white bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
               >
                 Buy 500 BRT
               </button>
@@ -219,19 +223,21 @@ const BuyToken = () => {
         </div>
 
         {/* 1000 BRT Package */}
-        <div className="bg-white/10 backdrop-blur-md rounded-xl overflow-hidden shadow-lg border border-white/20 transition-transform duration-300 hover:scale-105">
-          <div className="p-6">
-            <img
-              src="/images/token-1000.png" // Replace with your image path
-              alt="1000 BRT Token Package"
-              className="w-full h-32 object-cover rounded-lg mb-4"
-            />
-            <div className="text-center">
+        <div className="bg-white/10 backdrop-blur-md rounded-xl overflow-hidden shadow-lg border border-white/20 transition-transform duration-300 hover:scale-105 flex flex-col items-center min-w-[280px]">
+          <div className="p-6 w-full flex flex-col items-center">
+            <div className="w-32 h-32 mb-4 flex items-center justify-center bg-white/5 rounded-md p-2">
+              <img
+                src="./1000BRT.png"
+                alt="1000 BRT Token Package"
+                className="w-20 h-20 object-cover"
+              />
+            </div>
+            <div className="text-center w-full">
               <h3 className="text-xl font-bold text-white mb-2">1000 BRT</h3>
               <p className="text-gray-300 mb-4">for 0.01 ETH</p>
               <button
                 onClick={() => handleBuy1000BRT()}
-                className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+                className="w-full max-w-xs mx-auto border-2 border-white bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
               >
                 Buy 1000 BRT
               </button>
