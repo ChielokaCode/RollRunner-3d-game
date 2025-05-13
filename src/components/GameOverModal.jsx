@@ -118,7 +118,7 @@ function GameOverModal({ distance, time, collisions, restartGame }) {
       </div>
       {/* End */}
       <div className="bg-black/80 backdrop-blur-lg p-8 rounded-xl border border-white/20 max-w-md w-1/2 h-fit shadow-2xl text-center transform animate-bounce-in">
-        <h2 className="text-4xl font-bold text-red-500 mb-6">GAME OVER</h2>
+        <div className="text-6xl font-bold text-red-500 mb-6">GAME OVER</div>
 
         <div className="space-y-4 mb-8">
           {/* Game stats display */}

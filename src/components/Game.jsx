@@ -678,8 +678,8 @@ const Game = () => {
         // Smooth land back down
         gsap.to(actorBody.position, {
           y: 0,
-          duration: jumpDuration,
-          ease: "power2.in", // Fast drop
+          duration: 0.5,
+          ease: "power2.out", // Fast drop
           onComplete: () => {
             isJumping = false;
           },
@@ -923,7 +923,6 @@ const Game = () => {
         actorLife={actorLifeRef.current}
         distance={currentDistanceRef.current}
         time={timeRef.current}
-        // collisions={noOfCollisionsRef.current}
       />
 
       {!gameStart && !showModal && (
