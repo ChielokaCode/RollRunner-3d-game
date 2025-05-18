@@ -2,7 +2,6 @@
 
 # Contract address
 https://sepolia.basescan.org/address/0x03AEE8d6e5ed33BE7520eeC74A85C12a7F5bBEa7
-0x03AEE8d6e5ed33BE7520eeC74A85C12a7F5bBEa7
 
 # Video DEMO
 
